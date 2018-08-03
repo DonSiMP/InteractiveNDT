@@ -1,5 +1,5 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/ndt.dir/ndt.cpp.o"
+  "CMakeFiles/ndt.dir/pcl_demo.cpp.o"
   "ndt.pdb"
   "ndt"
 )

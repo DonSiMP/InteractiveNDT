@@ -8,6 +8,13 @@
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/console/time.h>   // TicToc
 
+/**
+ * TODO
+ * 1, change ICP to NDT
+ * 2, use different point cloud samples
+ *
+ */
+
 typedef pcl::PointXYZ PointT;
 typedef pcl::PointCloud<PointT> PointCloudT;
 
@@ -41,7 +48,7 @@ main (int argc,
   // Checking program arguments
   if (argc < 2) {
     printf ("Usage :\n");
-    printf ("\t\t%s file.ply number_of_ICP_iterations\n", argv[0]);
+    printf ("\t\t%s file.pcd number_of_ICP_iterations\n", argv[0]);
     PCL_ERROR ("Provide one ply file.\n");
     return (-1);
   }
@@ -84,6 +91,7 @@ main (int argc,
   // Executing the transformation
   pcl::transformPointCloud (*cloud_in, *cloud_icp, transformation_matrix);
   *cloud_tr = *cloud_icp;  // We backup cloud_icp into cloud_tr for later use
+
 
   // The Iterative Closest Point algorithm
   time.tic ();
