@@ -3,25 +3,20 @@
 
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
-#include <pcl/point_types.h>
 #include <pcl/registration/icp.h>
+#include <pcl/registration/ndt.h>
+#include <pcl/filters/approximate_voxel_grid.h>
+#include <pcl/filters/voxel_grid_covariance.h>
+#include <pcl/point_types.h>
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/console/time.h>   // TicToc
-
-/**
- * TODO
- * 1, change ICP to NDT
- * 2, use different point cloud samples
- *
- */
 
 typedef pcl::PointXYZ PointT;
 typedef pcl::PointCloud<PointT> PointCloudT;
 
 bool next_iteration = false;
 
-void
-print4x4Matrix (const Eigen::Matrix4d & matrix) {
+void print4x4Matrix (const Eigen::Matrix4d & matrix) {
   printf ("Rotation matrix :\n");
   printf ("    | %6.3f %6.3f %6.3f | \n", matrix (0, 0), matrix (0, 1), matrix (0, 2));
   printf ("R = | %6.3f %6.3f %6.3f | \n", matrix (1, 0), matrix (1, 1), matrix (1, 2));
@@ -30,33 +25,30 @@ print4x4Matrix (const Eigen::Matrix4d & matrix) {
   printf ("t = < %6.3f, %6.3f, %6.3f >\n\n", matrix (0, 3), matrix (1, 3), matrix (2, 3));
 }
 
-void
-keyboardEventOccurred (const pcl::visualization::KeyboardEvent& event,
-                       void* nothing) {
+void keyboardEventOccurred (const pcl::visualization::KeyboardEvent& event,
+                            void* nothing) {
   if (event.getKeySym () == "space" && event.keyDown ())
     next_iteration = true;
 }
 
-int
-main (int argc,
-      char* argv[]) {
+int main (int argc, char* argv[]) {
   // The point clouds we will be using
-  PointCloudT::Ptr cloud_in (new PointCloudT);  // Original point cloud
-  PointCloudT::Ptr cloud_tr (new PointCloudT);  // Transformed point cloud
-  PointCloudT::Ptr cloud_icp (new PointCloudT);  // ICP output point cloud
+  PointCloudT::Ptr cloud_target (new PointCloudT);  // Original point cloud
+  PointCloudT::Ptr cloud_source_copy (new PointCloudT);  // Transformed point cloud
+  PointCloudT::Ptr cloud_source (new PointCloudT);  // NDT output point cloud
 
   // Checking program arguments
-  if (argc < 2) {
+  if (argc < 3) {
     printf ("Usage :\n");
-    printf ("\t\t%s file.pcd number_of_ICP_iterations\n", argv[0]);
-    PCL_ERROR ("Provide one ply file.\n");
+    printf ("\t\t%s source.pcd target.pcd number_of_NDT_iterations\n", argv[0]);
+    PCL_ERROR ("Provide one pcd file.\n");
     return (-1);
   }
 
-  int iterations = 1;  // Default number of ICP iterations
-  if (argc > 2) {
+  int iterations = 1;  // Default number of NDT iterations
+  if (argc > 3) {
     // If the user passed the number of iteration as an argument
-    iterations = atoi (argv[2]);
+    iterations = atoi (argv[3]);
     if (iterations < 1) {
       PCL_ERROR ("Number of initial iterations must be >= 1\n");
       return (-1);
@@ -64,58 +56,85 @@ main (int argc,
   }
 
   pcl::console::TicToc time;
-  time.tic ();
-  if (pcl::io::loadPCDFile<PointT> (argv[1], *cloud_in) < 0) {
+  time.tic();
+
+  // load target cloud
+  if (pcl::io::loadPCDFile<PointT> (argv[1], *cloud_source) < 0) {
     PCL_ERROR ("Error loading cloud %s.\n", argv[1]);
     return (-1);
   }
-  std::cout << "\nLoaded file " << argv[1] << " (" << cloud_in->size () << " points) in " << time.toc () << " ms\n" << std::endl;
+  std::cout << "\nLoaded file " << argv[1] << " (" << cloud_source->size () << " points) in "
+            << time.toc () << " ms\n" << std::endl;
 
-  // Defining a rotation matrix and translation vector
-  Eigen::Matrix4d transformation_matrix = Eigen::Matrix4d::Identity ();
-
-  // A rotation matrix (see https://en.wikipedia.org/wiki/Rotation_matrix)
-  double theta = M_PI / 8;  // The angle of rotation in radians
-  transformation_matrix (0, 0) = cos (theta);
-  transformation_matrix (0, 1) = -sin (theta);
-  transformation_matrix (1, 0) = sin (theta);
-  transformation_matrix (1, 1) = cos (theta);
-
-  // A translation on Z axis (0.4 meters)
-  transformation_matrix (2, 3) = 0.4;
-
-  // Display in terminal the transformation matrix
-  std::cout << "Applying this rigid transformation to: cloud_in -> cloud_icp" << std::endl;
-  print4x4Matrix (transformation_matrix);
-
-  // Executing the transformation
-  pcl::transformPointCloud (*cloud_in, *cloud_icp, transformation_matrix);
-  *cloud_tr = *cloud_icp;  // We backup cloud_icp into cloud_tr for later use
-
-
-  // The Iterative Closest Point algorithm
-  time.tic ();
-  pcl::IterativeClosestPoint<PointT, PointT> icp;
-  icp.setMaximumIterations (iterations);
-  icp.setInputSource (cloud_icp);
-  icp.setInputTarget (cloud_in);
-  icp.align (*cloud_icp);
-  icp.setMaximumIterations (1);  // We set this variable to 1 for the next time we will call .align () function
-  std::cout << "Applied " << iterations << " ICP iteration(s) in " << time.toc () << " ms" << std::endl;
-
-  if (icp.hasConverged ()) {
-    std::cout << "\nICP has converged, score is " << icp.getFitnessScore () << std::endl;
-    std::cout << "\nICP transformation " << iterations << " : cloud_icp -> cloud_in" << std::endl;
-    transformation_matrix = icp.getFinalTransformation ().cast<double>();
-    print4x4Matrix (transformation_matrix);
+  // load source cloud
+  if (pcl::io::loadPCDFile<PointT> (argv[2], *cloud_target) < 0) {
+    PCL_ERROR ("Error loading cloud %s.\n", argv[2]);
+    return (-1);
   }
-  else {
-    PCL_ERROR ("\nICP has not converged.\n");
+  std::cout << "Loaded file " << argv[2] << " (" << cloud_target->size () << " points) in "
+            << time.toc () << " ms\n" << std::endl;
+
+  // extract the voxel grid covar from target cloud
+  pcl::VoxelGridCovariance<PointT> covar;
+  float leaf_size = 1.0;
+  covar.setLeafSize(leaf_size, leaf_size, leaf_size);
+  covar.setInputCloud(cloud_target);
+  covar.filter(true);
+
+  // get the distribution cloud
+  PointCloudT distribution;
+  covar.getDisplayCloud(distribution);
+  std::string dist_file_path = "dist.pcd";
+  pcl::io::savePCDFileASCII(dist_file_path, distribution);
+  std::cout << "extracted distribution from target cloud\n";
+
+  Eigen::Matrix4d transformation_matrix;
+
+  *cloud_source_copy = *cloud_source;  // We backup cloud_source into cloud_source_copy for later use
+
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered_source(new pcl::PointCloud<pcl::PointXYZ> ());
+  pcl::ApproximateVoxelGrid<pcl::PointXYZ> approx_filter;
+  approx_filter.setLeafSize(0.2, 0.2, 0.2);
+  approx_filter.setInputCloud(cloud_source);
+  approx_filter.filter(*cloud_filtered_source);
+
+  std::cout << "filtered source cloud has " << cloud_filtered_source->size()
+            << " points\n";
+
+  // Set initial alignment estimate found using robot odometry.
+  Eigen::AngleAxisf init_rotation (0.6931, Eigen::Vector3f::UnitZ ());
+  Eigen::Translation3f init_translation (1.79387, 0.720047, 0);
+  Eigen::Matrix4f init_guess = (init_translation * init_rotation).matrix();
+
+  time.tic ();
+  PointCloudT::Ptr output_cloud (new PointCloudT);
+  // The NDT algorithm
+  pcl::NormalDistributionsTransform<PointT, PointT> ndt;
+  ndt.setMaximumIterations (iterations);
+  ndt.setTransformationEpsilon(0.01);
+  ndt.setStepSize(0.1);
+  ndt.setResolution(1.0);
+  ndt.setInputSource (cloud_filtered_source);
+  ndt.setInputTarget (cloud_target);
+  ndt.align(*output_cloud, init_guess);
+//  ndt.align (*cloud_source);
+  ndt.setMaximumIterations (1);  // We set this variable to 1 for the next time we will call .align () function
+  std::cout << "Applied " << iterations << " NDT iteration(s) in " << time.toc () << " ms" << std::endl;
+
+  if (ndt.hasConverged ()) {
+    std::cout << "\nNDT has converged, score is " << ndt.getFitnessScore () << std::endl;
+    std::cout << "\nNDT transformation " << iterations << " : cloud_source -> cloud_target" << std::endl;
+    transformation_matrix = ndt.getFinalTransformation ().cast<double>();
+    print4x4Matrix (transformation_matrix);
+  } else {
+    PCL_ERROR ("\nNDT has not converged.\n");
     return (-1);
   }
 
+  std::cout << "\n*********************** visualization step ********************************\n";
+
   // Visualization
-  pcl::visualization::PCLVisualizer viewer ("ICP demo");
+  pcl::visualization::PCLVisualizer viewer ("NDT demo");
   // Create two vertically separated viewports
   int v1 (0);
   int v2 (1);
@@ -127,26 +146,26 @@ main (int argc,
   float txt_gray_lvl = 1.0 - bckgr_gray_level;
 
   // Original point cloud is white
-  pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_in_color_h (cloud_in, (int) 255 * txt_gray_lvl, (int) 255 * txt_gray_lvl,
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_in_color_h (cloud_target, (int) 255 * txt_gray_lvl, (int) 255 * txt_gray_lvl,
                                                                              (int) 255 * txt_gray_lvl);
-  viewer.addPointCloud (cloud_in, cloud_in_color_h, "cloud_in_v1", v1);
-  viewer.addPointCloud (cloud_in, cloud_in_color_h, "cloud_in_v2", v2);
+  viewer.addPointCloud (cloud_target, cloud_in_color_h, "cloud_in_v1", v1);
+  viewer.addPointCloud (cloud_target, cloud_in_color_h, "cloud_in_v2", v2);
 
   // Transformed point cloud is green
-  pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_tr_color_h (cloud_tr, 20, 180, 20);
-  viewer.addPointCloud (cloud_tr, cloud_tr_color_h, "cloud_tr_v1", v1);
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_copy_source_color_h (cloud_source_copy, 20, 180, 20);
+  viewer.addPointCloud (cloud_source_copy, cloud_copy_source_color_h, "cloud_tr_v1", v1);
 
-  // ICP aligned point cloud is red
-  pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_icp_color_h (cloud_icp, 180, 20, 20);
-  viewer.addPointCloud (cloud_icp, cloud_icp_color_h, "cloud_icp_v2", v2);
+  // NDT aligned point cloud is red
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_source_color_h (cloud_source, 180, 20, 20);
+  viewer.addPointCloud (cloud_source, cloud_source_color_h, "cloud_icp_v2", v2);
 
   // Adding text descriptions in each viewport
   viewer.addText ("White: Original point cloud\nGreen: Matrix transformed point cloud", 10, 15, 16, txt_gray_lvl, txt_gray_lvl, txt_gray_lvl, "icp_info_1", v1);
-  viewer.addText ("White: Original point cloud\nRed: ICP aligned point cloud", 10, 15, 16, txt_gray_lvl, txt_gray_lvl, txt_gray_lvl, "icp_info_2", v2);
+  viewer.addText ("White: Original point cloud\nRed: NDT aligned point cloud", 10, 15, 16, txt_gray_lvl, txt_gray_lvl, txt_gray_lvl, "icp_info_2", v2);
 
   std::stringstream ss;
   ss << iterations;
-  std::string iterations_cnt = "ICP iterations = " + ss.str ();
+  std::string iterations_cnt = "NDT iterations = " + ss.str ();
   viewer.addText (iterations_cnt, 10, 60, 16, txt_gray_lvl, txt_gray_lvl, txt_gray_lvl, "iterations_cnt", v2);
 
   // Set background color
@@ -168,28 +187,30 @@ main (int argc,
     if (next_iteration) {
       // The Iterative Closest Point algorithm
       time.tic ();
-      icp.align (*cloud_icp);
-      std::cout << "Applied 1 ICP iteration in " << time.toc () << " ms" << std::endl;
+      ndt.align (*output_cloud);
+      std::cout << "Applied 1 NDT iteration in " << time.toc () << " ms" << std::endl;
 
-      if (icp.hasConverged ()) {
-        printf ("\033[11A");  // Go up 11 lines in terminal output.
-        printf ("\nICP has converged, score is %+.0e\n", icp.getFitnessScore ());
-        std::cout << "\nICP transformation " << ++iterations << " : cloud_icp -> cloud_in" << std::endl;
-        transformation_matrix *= icp.getFinalTransformation ().cast<double>();  // WARNING /!\ This is not accurate! For "educational" purpose only!
+      if (ndt.hasConverged ()) {
+//        printf ("\033[11A");  // Go up 11 lines in terminal output.
+        printf ("\nNDT has converged, score is %+.0e\n", ndt.getFitnessScore ());
+        std::cout << "\nNDT transformation " << ++iterations << " : cloud_source -> cloud_target" << std::endl;
+        transformation_matrix *= ndt.getFinalTransformation ().cast<double>();  // WARNING /!\ This is not accurate! For "educational" purpose only!
         print4x4Matrix (transformation_matrix);  // Print the transformation between original pose and current pose
 
         ss.str ("");
         ss << iterations;
-        std::string iterations_cnt = "ICP iterations = " + ss.str ();
+        std::string iterations_cnt = "NDT iterations = " + ss.str ();
         viewer.updateText (iterations_cnt, 10, 60, 16, txt_gray_lvl, txt_gray_lvl, txt_gray_lvl, "iterations_cnt");
-        viewer.updatePointCloud (cloud_icp, cloud_icp_color_h, "cloud_icp_v2");
-      }
-      else {
-        PCL_ERROR ("\nICP has not converged.\n");
+        // have to transform the source cloud manually
+        pcl::transformPointCloud(*cloud_source, *cloud_source, ndt.getFinalTransformation());
+        viewer.updatePointCloud (cloud_source, cloud_source_color_h, "cloud_icp_v2");
+      } else {
+        PCL_ERROR ("\nNDT has not converged.\n");
         return (-1);
       }
     }
     next_iteration = false;
   }
-  return (0);
+  pcl::io::savePCDFileASCII("transformed_scan1.pcd", *cloud_source);
+  return 0;
 }

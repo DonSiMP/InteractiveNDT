@@ -1,21 +1,6 @@
 /Applications/CLion.app/Contents/bin/cmake/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /Users/jjchen/github/interactive-ndt
--- The C compiler identification is AppleClang 9.1.0.9020039
--- The CXX compiler identification is AppleClang 9.1.0.9020039
--- Check for working C compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc
--- Check for working C compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc -- works
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - done
--- Detecting C compile features
--- Detecting C compile features - done
--- Check for working CXX compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++
--- Check for working CXX compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -- works
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - done
--- Detecting CXX compile features
--- Detecting CXX compile features - done
 -- Checking for module 'eigen3'
 --   Found eigen3, version 3.3.5
--- Found eigen: /usr/local/Cellar/eigen/3.3.5/include/eigen3  
 CMake Warning at /Applications/CLion.app/Contents/bin/cmake/share/cmake-3.8/Modules/FindBoost.cmake:765 (message):
   Imported targets not available for Boost version 106700
 Call Stack (most recent call first):
@@ -93,11 +78,6 @@ Call Stack (most recent call first):
   CMakeLists.txt:5 (FIND_PACKAGE)
 
 
--- Looking for pthread.h
--- Looking for pthread.h - found
--- Looking for pthread_create
--- Looking for pthread_create - found
--- Found Threads: TRUE  
 -- Boost version: 1.67.0
 -- Found the following Boost libraries:
 --   system
@@ -123,11 +103,9 @@ Call Stack (most recent call first):
 ** WARNING ** io features related to dssdk will be disabled
 ** WARNING ** io features related to pcap will be disabled
 ** WARNING ** io features related to png will be disabled
--- Found libusb-1.0: /usr/local/include  
 ** WARNING ** io features related to libusb-1.0 will be disabled
 -- Checking for module 'flann'
 --   Found flann, version 1.9.1
--- Found Flann: /usr/local/Cellar/flann/1.9.1_4/lib/libflann_cpp_s.a  
 -- Checking for module 'flann'
 --   Found flann, version 1.9.1
 -- Checking for module 'libopenni'
@@ -146,60 +124,34 @@ Call Stack (most recent call first):
 ** WARNING ** visualization features related to dssdk will be disabled
 -- Could NOT find RSSDK (missing:  _RSSDK_LIBRARIES) 
 ** WARNING ** visualization features related to rssdk will be disabled
--- Found qhull: /usr/local/lib/libqhull_p.dylib  
 -- Checking for module 'libopenni'
 --   No package 'libopenni' found
 -- Could NOT find openni (missing:  OPENNI_LIBRARY OPENNI_INCLUDE_DIRS) 
 ** WARNING ** apps features related to openni will be disabled
--- Found OpenGL: /System/Library/Frameworks/OpenGL.framework  
 -- Found Glew: /usr/local/lib/libGLEW.dylib
 -- looking for PCL_COMMON
--- Found PCL_COMMON: /usr/local/lib/libpcl_common.dylib  
 -- looking for PCL_OCTREE
--- Found PCL_OCTREE: /usr/local/lib/libpcl_octree.dylib  
 -- looking for PCL_IO
--- Found PCL_IO: /usr/local/lib/libpcl_io.dylib  
 -- looking for PCL_KDTREE
--- Found PCL_KDTREE: /usr/local/lib/libpcl_kdtree.dylib  
 -- looking for PCL_SEARCH
--- Found PCL_SEARCH: /usr/local/lib/libpcl_search.dylib  
 -- looking for PCL_SAMPLE_CONSENSUS
--- Found PCL_SAMPLE_CONSENSUS: /usr/local/lib/libpcl_sample_consensus.dylib  
 -- looking for PCL_FILTERS
--- Found PCL_FILTERS: /usr/local/lib/libpcl_filters.dylib  
 -- looking for PCL_2D
--- Found PCL_2D: /usr/local/include/pcl-1.8  
 -- looking for PCL_GEOMETRY
--- Found PCL_GEOMETRY: /usr/local/include/pcl-1.8  
 -- looking for PCL_FEATURES
--- Found PCL_FEATURES: /usr/local/lib/libpcl_features.dylib  
 -- looking for PCL_ML
--- Found PCL_ML: /usr/local/lib/libpcl_ml.dylib  
 -- looking for PCL_SEGMENTATION
--- Found PCL_SEGMENTATION: /usr/local/lib/libpcl_segmentation.dylib  
 -- looking for PCL_VISUALIZATION
--- Found PCL_VISUALIZATION: /usr/local/lib/libpcl_visualization.dylib  
 -- looking for PCL_SURFACE
--- Found PCL_SURFACE: /usr/local/lib/libpcl_surface.dylib  
 -- looking for PCL_REGISTRATION
--- Found PCL_REGISTRATION: /usr/local/lib/libpcl_registration.dylib  
 -- looking for PCL_KEYPOINTS
--- Found PCL_KEYPOINTS: /usr/local/lib/libpcl_keypoints.dylib  
 -- looking for PCL_TRACKING
--- Found PCL_TRACKING: /usr/local/lib/libpcl_tracking.dylib  
 -- looking for PCL_RECOGNITION
--- Found PCL_RECOGNITION: /usr/local/lib/libpcl_recognition.dylib  
 -- looking for PCL_STEREO
--- Found PCL_STEREO: /usr/local/lib/libpcl_stereo.dylib  
 -- looking for PCL_APPS
--- Found PCL_APPS: /usr/local/lib/libpcl_apps.dylib  
 -- looking for PCL_OUTOFCORE
--- Found PCL_OUTOFCORE: /usr/local/lib/libpcl_outofcore.dylib  
 -- looking for PCL_PEOPLE
--- Found PCL_PEOPLE: /usr/local/lib/libpcl_people.dylib  
 -- looking for PCL_SIMULATION
--- Found PCL_SIMULATION: /usr/local/lib/libpcl_simulation.dylib  
--- Found PCL: /usr/local/lib/libboost_system-mt.dylib;/usr/local/lib/libboost_filesystem-mt.dylib;/usr/local/lib/libboost_thread-mt.dylib;/usr/local/lib/libboost_date_time-mt.dylib;/usr/local/lib/libboost_iostreams-mt.dylib;/usr/local/lib/libboost_serialization-mt.dylib;/usr/local/lib/libboost_chrono-mt.dylib;optimized;/usr/local/lib/libpcl_common.dylib;debug;/usr/local/lib/libpcl_common.dylib;optimized;/usr/local/lib/libpcl_octree.dylib;debug;/usr/local/lib/libpcl_octree.dylib;vtksys;vtkCommonCore;vtkCommonMath;vtkCommonMisc;vtkCommonSystem;vtkCommonTransforms;vtkCommonDataModel;vtkCommonColor;vtkCommonExecutionModel;vtkCommonComputationalGeometry;vtkFiltersCore;vtkFiltersGeneral;vtkImagingCore;vtkImagingFourier;vtkalglib;vtkFiltersStatistics;vtkFiltersExtraction;vtkInfovisCore;vtkFiltersGeometry;vtkFiltersSources;vtkRenderingCore;/usr/lib/libz.dylib;vtkfreetype;vtkRenderingFreeType;vtkRenderingContext2D;vtkChartsCore;vtkDICOMParser;vtklz4;vtkIOCore;vtkIOLegacy;/usr/lib/libexpat.dylib;vtkIOXMLParser;vtkDomainsChemistry;vtkglew;vtkRenderingOpenGL2;vtkDomainsChemistryOpenGL2;vtkIOXML;vtkParallelCore;vtkFiltersAMR;vtkFiltersFlowPaths;vtkFiltersGeneric;vtkImagingSources;vtkFiltersHybrid;vtkFiltersHyperTree;vtkImagingGeneral;vtkFiltersImaging;vtkFiltersModeling;vtkFiltersParallel;vtkFiltersParallelImaging;vtkFiltersPoints;vtkFiltersProgrammable;/usr/local/opt/python@2/Frameworks/Python.framework/Versions/2.7/Python;vtkWrappingTools;vtkWrappingPythonCore;vtkFiltersPython;vtkFiltersSMP;vtkFiltersSelection;vtkFiltersTexture;vtkFiltersTopology;verdict;vtkFiltersVerdict;vtkmetaio;/usr/local/lib/libjpeg.dylib;/usr/local/lib/libpng.dylib;/usr/local/lib/libtiff.dylib;vtkIOImage;vtkImagingHybrid;vtkInfovisLayout;vtkInteractionStyle;vtkImagingColor;vtkRenderingAnnotation;vtkRenderingVolume;vtkInteractionWidgets;vtkViewsCore;vtkproj4;vtkGeovisCore;/usr/local/lib/libhdf5.dylib;/usr/local/lib/libsz.dylib;/usr/lib/libdl.dylib;/usr/lib/libm.dylib;/usr/local/lib/libhdf5_hl.dylib;vtkIOAMR;vtkIOEnSight;/usr/local/lib/libnetcdf.dylib;vtkexoIIc;vtkIOExodus;vtkgl2ps;vtkRenderingGL2PSOpenGL2;vtklibharu;vtkIOExport;vtkIOExportOpenGL2;vtkIOGeometry;vtkIOImport;/usr/lib/libxml2.dylib;vtkIOInfovis;vtkIOLSDyna;vtkIOMINC;vtkoggtheora;vtkIOMovie;vtknetcdfcpp;vtkIONetCDF;vtkIOPLY;vtkjsoncpp;vtkIOParallel;vtkIOParallelXML;vtksqlite;vtkIOSQL;vtkIOTecplotTable;vtkIOVideo;vtkImagingMath;vtkImagingMorphological;vtkImagingStatistics;vtkImagingStencil;vtkInfovisBoostGraphAlgorithms;vtkInteractionImage;vtkRenderingContextOpenGL2;vtkRenderingFreeTypeFontConfig;vtkRenderingImage;vtkRenderingLOD;vtkRenderingLabel;vtkRenderingVolumeOpenGL2;vtkViewsContext2D;vtkViewsInfovis;optimized;/usr/local/lib/libpcl_io.dylib;debug;/usr/local/lib/libpcl_io.dylib;optimized;/usr/local/Cellar/flann/1.9.1_4/lib/libflann_cpp_s.a;debug;/usr/local/Cellar/flann/1.9.1_4/lib/libflann_cpp_s.a;optimized;/usr/local/lib/libpcl_kdtree.dylib;debug;/usr/local/lib/libpcl_kdtree.dylib;optimized;/usr/local/lib/libpcl_search.dylib;debug;/usr/local/lib/libpcl_search.dylib;optimized;/usr/local/lib/libpcl_sample_consensus.dylib;debug;/usr/local/lib/libpcl_sample_consensus.dylib;optimized;/usr/local/lib/libpcl_filters.dylib;debug;/usr/local/lib/libpcl_filters.dylib;optimized;/usr/local/lib/libpcl_features.dylib;debug;/usr/local/lib/libpcl_features.dylib;optimized;/usr/local/lib/libpcl_ml.dylib;debug;/usr/local/lib/libpcl_ml.dylib;optimized;/usr/local/lib/libpcl_segmentation.dylib;debug;/usr/local/lib/libpcl_segmentation.dylib;optimized;/usr/local/lib/libpcl_visualization.dylib;debug;/usr/local/lib/libpcl_visualization.dylib;optimized;/usr/local/lib/libqhull_p.dylib;debug;/usr/local/lib/libqhull_p.dylib;optimized;/usr/local/lib/libpcl_surface.dylib;debug;/usr/local/lib/libpcl_surface.dylib;optimized;/usr/local/lib/libpcl_registration.dylib;debug;/usr/local/lib/libpcl_registration.dylib;optimized;/usr/local/lib/libpcl_keypoints.dylib;debug;/usr/local/lib/libpcl_keypoints.dylib;optimized;/usr/local/lib/libpcl_tracking.dylib;debug;/usr/local/lib/libpcl_tracking.dylib;optimized;/usr/local/lib/libpcl_recognition.dylib;debug;/usr/local/lib/libpcl_recognition.dylib;optimized;/usr/local/lib/libpcl_stereo.dylib;debug;/usr/local/lib/libpcl_stereo.dylib;optimized;/usr/local/lib/libpcl_apps.dylib;debug;/usr/local/lib/libpcl_apps.dylib;optimized;/usr/local/lib/libpcl_outofcore.dylib;debug;/usr/local/lib/libpcl_outofcore.dylib;optimized;/usr/local/lib/libpcl_people.dylib;debug;/usr/local/lib/libpcl_people.dylib;/System/Library/Frameworks/OpenGL.framework;/usr/local/lib/libGLEW.dylib;optimized;/usr/local/lib/libpcl_simulation.dylib;debug;/usr/local/lib/libpcl_simulation.dylib;/usr/local/lib/libboost_system-mt.dylib;/usr/local/lib/libboost_filesystem-mt.dylib;/usr/local/lib/libboost_thread-mt.dylib;/usr/local/lib/libboost_date_time-mt.dylib;/usr/local/lib/libboost_iostreams-mt.dylib;/usr/local/lib/libboost_serialization-mt.dylib;/usr/local/lib/libboost_chrono-mt.dylib;optimized;/usr/local/lib/libqhull_p.dylib;debug;/usr/local/lib/libqhull_p.dylib;optimized;/usr/local/Cellar/flann/1.9.1_4/lib/libflann_cpp_s.a;debug;/usr/local/Cellar/flann/1.9.1_4/lib/libflann_cpp_s.a;vtksys;vtkCommonCore;vtkCommonMath;vtkCommonMisc;vtkCommonSystem;vtkCommonTransforms;vtkCommonDataModel;vtkCommonColor;vtkCommonExecutionModel;vtkCommonComputationalGeometry;vtkFiltersCore;vtkFiltersGeneral;vtkImagingCore;vtkImagingFourier;vtkalglib;vtkFiltersStatistics;vtkFiltersExtraction;vtkInfovisCore;vtkFiltersGeometry;vtkFiltersSources;vtkRenderingCore;/usr/lib/libz.dylib;vtkfreetype;vtkRenderingFreeType;vtkRenderingContext2D;vtkChartsCore;vtkDICOMParser;vtklz4;vtkIOCore;vtkIOLegacy;/usr/lib/libexpat.dylib;vtkIOXMLParser;vtkDomainsChemistry;vtkglew;vtkRenderingOpenGL2;vtkDomainsChemistryOpenGL2;vtkIOXML;vtkParallelCore;vtkFiltersAMR;vtkFiltersFlowPaths;vtkFiltersGeneric;vtkImagingSources;vtkFiltersHybrid;vtkFiltersHyperTree;vtkImagingGeneral;vtkFiltersImaging;vtkFiltersModeling;vtkFiltersParallel;vtkFiltersParallelImaging;vtkFiltersPoints;vtkFiltersProgrammable;/usr/local/opt/python@2/Frameworks/Python.framework/Versions/2.7/Python;vtkWrappingTools;vtkWrappingPythonCore;vtkFiltersPython;vtkFiltersSMP;vtkFiltersSelection;vtkFiltersTexture;vtkFiltersTopology;verdict;vtkFiltersVerdict;vtkmetaio;/usr/local/lib/libjpeg.dylib;/usr/local/lib/libpng.dylib;/usr/local/lib/libtiff.dylib;vtkIOImage;vtkImagingHybrid;vtkInfovisLayout;vtkInteractionStyle;vtkImagingColor;vtkRenderingAnnotation;vtkRenderingVolume;vtkInteractionWidgets;vtkViewsCore;vtkproj4;vtkGeovisCore;/usr/local/lib/libhdf5.dylib;/usr/local/lib/libsz.dylib;/usr/lib/libdl.dylib;/usr/lib/libm.dylib;/usr/local/lib/libhdf5_hl.dylib;vtkIOAMR;vtkIOEnSight;/usr/local/lib/libnetcdf.dylib;vtkexoIIc;vtkIOExodus;vtkgl2ps;vtkRenderingGL2PSOpenGL2;vtklibharu;vtkIOExport;vtkIOExportOpenGL2;vtkIOGeometry;vtkIOImport;/usr/lib/libxml2.dylib;vtkIOInfovis;vtkIOLSDyna;vtkIOMINC;vtkoggtheora;vtkIOMovie;vtknetcdfcpp;vtkIONetCDF;vtkIOPLY;vtkjsoncpp;vtkIOParallel;vtkIOParallelXML;vtksqlite;vtkIOSQL;vtkIOTecplotTable;vtkIOVideo;vtkImagingMath;vtkImagingMorphological;vtkImagingStatistics;vtkImagingStencil;vtkInfovisBoostGraphAlgorithms;vtkInteractionImage;vtkRenderingContextOpenGL2;vtkRenderingFreeTypeFontConfig;vtkRenderingImage;vtkRenderingLOD;vtkRenderingLabel;vtkRenderingVolumeOpenGL2;vtkViewsContext2D;vtkViewsInfovis (Required is at least version "1.5") 
 -- Configuring done
 -- Generating done
 -- Build files have been written to: /Users/jjchen/github/interactive-ndt/cmake-build-debug
