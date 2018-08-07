@@ -27,14 +27,16 @@ void print4x4Matrix(const Eigen::Matrix4d & matrix) {
 
 void keyboardEventOccurred(const pcl::visualization::KeyboardEvent& event,
                             void* nothing) {
-  if (event.getKeySym() == "space" && event.keyDown())
+  if (event.getKeySym() == "space" && event.keyDown()) {
+    std::cout << "space pressed ... ";
     next_iteration = true;
+  }
 }
 
 int main(int argc, char* argv[]) {
   // The point clouds we will be using
-  PointCloudT::Ptr cloud_target(new PointCloudT);  // Original point cloud
-  PointCloudT::Ptr cloud_source_copy(new PointCloudT);  // Transformed point cloud
+  PointCloudT::Ptr cloud_target(new PointCloudT);
+  PointCloudT::Ptr cloud_source_copy(new PointCloudT);  // copy of source cloud
   PointCloudT::Ptr cloud_source(new PointCloudT);  // NDT output point cloud
 
   // Checking program arguments
@@ -63,7 +65,7 @@ int main(int argc, char* argv[]) {
     PCL_ERROR("Error loading cloud %s.\n", argv[1]);
     return(-1);
   }
-  std::cout << "\nLoaded file " << argv[1] << "(" << cloud_source->size() << " points) in "
+  std::cout << "\nLoaded source file " << argv[1] << "(" << cloud_source->size() << " points) in "
             << time.toc() << " ms\n" << std::endl;
 
   // load source cloud
@@ -71,7 +73,7 @@ int main(int argc, char* argv[]) {
     PCL_ERROR("Error loading cloud %s.\n", argv[2]);
     return(-1);
   }
-  std::cout << "Loaded file " << argv[2] << "(" << cloud_target->size() << " points) in "
+  std::cout << "Loaded target file " << argv[2] << "(" << cloud_target->size() << " points) in "
             << time.toc() << " ms\n" << std::endl;
 
   // extract the voxel grid covar from target cloud
@@ -88,7 +90,7 @@ int main(int argc, char* argv[]) {
   pcl::io::savePCDFileASCII(dist_file_path, distribution);
   std::cout << "extracted distribution from target cloud\n";
 
-  Eigen::Matrix4d transformation_matrix;
+  Eigen::Matrix4d transformation_matrix = Eigen::Matrix4d::Identity();
 
   *cloud_source_copy = *cloud_source;  // We backup cloud_source into cloud_source_copy for later use
 
@@ -108,6 +110,7 @@ int main(int argc, char* argv[]) {
 
   time.tic();
   PointCloudT::Ptr output_cloud(new PointCloudT);
+
   // The NDT algorithm
   pcl::NormalDistributionsTransform<PointT, PointT> ndt;
   ndt.setMaximumIterations(iterations);
@@ -118,18 +121,17 @@ int main(int argc, char* argv[]) {
   ndt.setInputTarget(cloud_target);
   ndt.align(*output_cloud, init_guess);
 //  ndt.align(*cloud_source);
-  ndt.setMaximumIterations(1);  // We set this variable to 1 for the next time we will call .align() function
-  std::cout << "Applied " << iterations << " NDT iteration(s) in " << time.toc() << " ms" << std::endl;
+  std::cout << "Applied maximum of " << iterations << " NDT iteration(s) in " << time.toc() << " ms" << std::endl;
 
   if (ndt.hasConverged()) {
-    std::cout << "\nNDT has converged, score is " << ndt.getFitnessScore() << std::endl;
+    std::cout << "\nNDT has converged after " << ndt.getFinalNumIteration() << " iterations, score is " << ndt.getFitnessScore() << std::endl;
     std::cout << "\nNDT transformation " << iterations << " : cloud_source -> cloud_target" << std::endl;
     transformation_matrix = ndt.getFinalTransformation().cast<double>();
     print4x4Matrix(transformation_matrix);
+    pcl::transformPointCloud(*cloud_filtered_source, *cloud_filtered_source, ndt.getFinalTransformation());
+    pcl::transformPointCloud(*cloud_source, *cloud_source, ndt.getFinalTransformation());
     std::string tmp_trans_cloud = "tmp_trans_cloud.pcd";
-    PointCloudT::Ptr tmp_cloud(new PointCloudT);
-    pcl::transformPointCloud(*cloud_source, *tmp_cloud, ndt.getFinalTransformation());
-    pcl::io::savePCDFileASCII(tmp_trans_cloud, *tmp_cloud);
+    pcl::io::savePCDFileASCII(tmp_trans_cloud, *cloud_source);
   } else {
     PCL_ERROR("\nNDT has not converged.\n");
     return(-1);
@@ -149,23 +151,23 @@ int main(int argc, char* argv[]) {
   float bckgr_gray_level = 0.0;  // Black
   float txt_gray_lvl = 1.0 - bckgr_gray_level;
 
-  // Original point cloud is white
+  // target point cloud is white
   pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_in_color_h(cloud_target,(int) 255 * txt_gray_lvl,(int) 255 * txt_gray_lvl,
                                                                             (int) 255 * txt_gray_lvl);
   viewer.addPointCloud(cloud_target, cloud_in_color_h, "cloud_in_v1", v1);
   viewer.addPointCloud(cloud_target, cloud_in_color_h, "cloud_in_v2", v2);
 
-  // Transformed point cloud is green
+  // copy of source point cloud is green
   pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_copy_source_color_h(cloud_source_copy, 20, 180, 20);
   viewer.addPointCloud(cloud_source_copy, cloud_copy_source_color_h, "cloud_tr_v1", v1);
 
-  // NDT aligned point cloud is red
+  // NDT aligned source point cloud is red
   pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_source_color_h(cloud_source, 180, 20, 20);
   viewer.addPointCloud(cloud_source, cloud_source_color_h, "cloud_icp_v2", v2);
 
   // Adding text descriptions in each viewport
-  viewer.addText("White: Original point cloud\nGreen: Matrix transformed point cloud", 10, 15, 16, txt_gray_lvl, txt_gray_lvl, txt_gray_lvl, "icp_info_1", v1);
-  viewer.addText("White: Original point cloud\nRed: NDT aligned point cloud", 10, 15, 16, txt_gray_lvl, txt_gray_lvl, txt_gray_lvl, "icp_info_2", v2);
+  viewer.addText("White: Target point cloud\nGreen: Copy of source point cloud", 10, 15, 16, txt_gray_lvl, txt_gray_lvl, txt_gray_lvl, "icp_info_1", v1);
+  viewer.addText("White: Target point cloud\nRed: NDT aligned source point cloud", 10, 15, 16, txt_gray_lvl, txt_gray_lvl, txt_gray_lvl, "icp_info_2", v2);
 
   std::stringstream ss;
   ss << iterations;
@@ -183,6 +185,18 @@ int main(int argc, char* argv[]) {
   // Register keyboard callback :
   viewer.registerKeyboardCallback(&keyboardEventOccurred,(void*) NULL);
 
+  transformation_matrix = Eigen::Matrix4d::Identity();
+  // use the transformed filtered source cloud
+  pcl::NormalDistributionsTransform<PointT, PointT> ndt2;
+  ndt2.setMaximumIterations(1);
+  ndt2.setTransformationEpsilon(0.01);
+  ndt2.setStepSize(0.1);
+  ndt2.setResolution(1.0);
+  ndt2.setInputSource(cloud_filtered_source);
+  ndt2.setInputTarget(cloud_target);
+  output_cloud = boost::shared_ptr<PointCloudT> (new PointCloudT);
+
+
   // Display the visualiser
   while (!viewer.wasStopped()) {
     viewer.spinOnce();
@@ -191,14 +205,14 @@ int main(int argc, char* argv[]) {
     if (next_iteration) {
       // The Iterative Closest Point algorithm
       time.tic();
-      ndt.align(*output_cloud);
+      ndt2.align(*output_cloud);
       std::cout << "Applied 1 NDT iteration in " << time.toc() << " ms" << std::endl;
 
-      if (ndt.hasConverged()) {
+      if (ndt2.hasConverged()) {
 //        printf("\033[11A");  // Go up 11 lines in terminal output.
-        printf("\nNDT has converged, score is %+.0e\n", ndt.getFitnessScore());
+        printf("\nNDT has converged after %d iterations, score is %+.0e\n", ndt2.getFinalNumIteration(), ndt2.getFitnessScore());
         std::cout << "\nNDT transformation " << ++iterations << " : cloud_source -> cloud_target" << std::endl;
-        transformation_matrix *= ndt.getFinalTransformation().cast<double>();  // WARNING /!\ This is not accurate! For "educational" purpose only!
+        transformation_matrix *= ndt2.getFinalTransformation().cast<double>();  // WARNING /!\ This is not accurate! For "educational" purpose only!
         print4x4Matrix(transformation_matrix);  // Print the transformation between original pose and current pose
 
         ss.str("");
@@ -206,7 +220,9 @@ int main(int argc, char* argv[]) {
         std::string iterations_cnt = "NDT iterations = " + ss.str();
         viewer.updateText(iterations_cnt, 10, 60, 16, txt_gray_lvl, txt_gray_lvl, txt_gray_lvl, "iterations_cnt");
         // have to transform the source cloud manually
-        pcl::transformPointCloud(*cloud_source, *cloud_source, ndt.getFinalTransformation());
+        pcl::transformPointCloud(*cloud_filtered_source, *cloud_filtered_source, ndt2.getFinalTransformation());
+        pcl::transformPointCloud(*cloud_source, *cloud_source, ndt2.getFinalTransformation());
+        ndt2.setInputSource(cloud_filtered_source);
         viewer.updatePointCloud(cloud_source, cloud_source_color_h, "cloud_icp_v2");
       } else {
         PCL_ERROR("\nNDT has not converged.\n");
